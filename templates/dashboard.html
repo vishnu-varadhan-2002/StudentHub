@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudentHub — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="layout">
+
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">{% include "_logo.html" %}</div>
+        <nav class="nav">
+            <a class="nav-item active" data-panel="dashboard"><span>🏠</span> Dashboard</a>
+            <a class="nav-item" data-panel="attendance"><span>🗓️</span> Attendance</a>
+            <a class="nav-item" data-panel="results"><span>📊</span> Results</a>
+            <a class="nav-item" data-panel="bio"><span>🧑</span> Bio Data</a>
+            <a class="nav-item" data-panel="projects"><span>📤</span> Projects</a>
+            <a class="nav-item" data-panel="announcements"><span>📢</span> Announcements</a>
+            <a class="nav-item" data-panel="updates"><span>📰</span> Updates</a>
+            <a class="nav-item" data-panel="fees"><span>💳</span> Fees</a>
+        </nav>
+        <button class="guide-btn" onclick="startTour()">✨ Show Guide</button>
+    </aside>
+
+    <!-- ===================== MAIN ===================== -->
+    <div class="main">
+        <header class="topbar">
+            <div class="hello">
+                <h1 id="page-title">Dashboard</h1>
+                <p class="muted">Welcome back, {{ profile.name.split(' ')[0] }} 👋</p>
+            </div>
+            <div class="topbar-right">
+                <span class="avatar">{{ profile.name[0] }}</span>
+                <div class="who">
+                    <b>{{ profile.name }}</b>
+                    <small>{{ profile.roll }}</small>
+                </div>
+                <a class="logout" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </header>
+
+        <main class="content">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}<div class="alert success">✅ {{ messages[0] }}</div>{% endif %}
+            {% endwith %}
+
+            <!-- ===== DASHBOARD ===== -->
+            <section class="panel active" id="panel-dashboard">
+                <div class="tiles">
+                    <div class="tile t-purple">
+                        <div class="tile-ic">🗓️</div>
+                        <div><span class="tile-num">{{ summary.attendance_pct }}%</span><p>Attendance</p></div>
+                    </div>
+                    <div class="tile t-green">
+                        <div class="tile-ic">🎓</div>
+                        <div><span class="tile-num">{{ summary.cgpa }}</span><p>CGPA</p></div>
+                    </div>
+                    <div class="tile t-orange">
+                        <div class="tile-ic">💳</div>
+                        <div><span class="tile-num">₹{{ '{:,}'.format(summary.pending_fees) }}</span><p>Pending Fees</p></div>
+                    </div>
+                    <div class="tile t-blue">
+                        <div class="tile-ic">📅</div>
+                        <div><span class="tile-num">{{ summary.upcoming_events }}</span><p>Upcoming</p></div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Attendance Overview</h3>
+                        {% for a in attendance %}
+                        <div class="bar-row">
+                            <span class="bar-label">{{ a.subject }}</span>
+                            <div class="bar"><div class="bar-fill {{ 'low' if a.pct < 75 else '' }}" style="width: {{ a.pct }}%"></div></div>
+                            <span class="bar-val">{{ a.pct }}%</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="card">
+                        <h3>Latest Announcements</h3>
+                        {% for a in ann_general[:3] %}
+                        <div class="mini-item">
+                            <b>{{ a.title }}</b>
+                            <small>{{ a.date }}</small>
+                            <p>{{ a.body }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== ATTENDANCE ===== -->
+            <section class="panel" id="panel-attendance">
+                <div class="card">
+                    <h3>Subject-wise Attendance</h3>
+                    <table>
+                        <thead><tr><th>Subject</th><th>Attended</th><th>Total</th><th>%</th><th>Status</th></tr></thead>
+                        <tbody>
+                        {% for a in attendance %}
+                            <tr>
+                                <td>{{ a.subject }}</td><td>{{ a.attended }}</td><td>{{ a.total }}</td>
+                                <td>{{ a.pct }}%</td>
+                                <td>{% if a.pct >= 75 %}<span class="pill ok">Good</span>{% else %}<span class="pill bad">Low</span>{% endif %}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===== RESULTS ===== -->
+            <section class="panel" id="panel-results">
+                <div class="tabs" data-group="results">
+                    <button class="tab active" data-tab="exam">Exam Scores</button>
+                    <button class="tab" data-tab="practical">Practical Scores</button>
+                </div>
+                <div class="card tab-body active" data-body="exam">
+                    <h3>Exam Scores</h3>
+                    <table>
+                        <thead><tr><th>Subject</th><th>Internal (30)</th><th>External (70)</th><th>Total</th><th>Grade</th></tr></thead>
+                        <tbody>
+                        {% for s in exams %}
+                            <tr><td>{{ s.subject }}</td><td>{{ s.internal }}</td><td>{{ s.external }}</td>
+                                <td><b>{{ s.total }}</b></td><td><span class="pill ok">{{ s.grade }}</span></td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card tab-body" data-body="practical">
+                    <h3>Practical Scores</h3>
+                    <table>
+                        <thead><tr><th>Laboratory</th><th>Marks (100)</th><th>Grade</th></tr></thead>
+                        <tbody>
+                        {% for p in practicals %}
+                            <tr><td>{{ p.lab }}</td><td>{{ p.marks }}</td><td><span class="pill ok">{{ p.grade }}</span></td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ===== BIO DATA ===== -->
+            <section class="panel" id="panel-bio">
+                <div class="card profile-card">
+                    <div class="profile-head">
+                        <span class="avatar big">{{ profile.name[0] }}</span>
+                        <div>
+                            <h3>{{ profile.name }}</h3>
+                            <p class="muted">{{ profile.program }}</p>
+                            <span class="pill ok">Roll: {{ profile.roll }}</span>
+                        </div>
+                    </div>
+                    <div class="bio-grid">
+                        <div><small>Email</small><b>{{ profile.email }}</b></div>
+                        <div><small>Phone</small><b>{{ profile.phone }}</b></div>
+                        <div><small>Date of Birth</small><b>{{ profile.dob }}</b></div>
+                        <div><small>Blood Group</small><b>{{ profile.blood }}</b></div>
+                        <div><small>Gender</small><b>{{ profile.gender }}</b></div>
+                        <div><small>Admission Year</small><b>{{ profile.admission_year }}</b></div>
+                        <div><small>Guardian</small><b>{{ profile.guardian }}</b></div>
+                        <div><small>Mentor</small><b>{{ profile.mentor }}</b></div>
+                        <div class="wide"><small>Address</small><b>{{ profile.address }}</b></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== PROJECTS ===== -->
+            <section class="panel" id="panel-projects">
+                <div class="grid-2">
+                    <div class="card">
+                        <h3>Upload a Project</h3>
+                        <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data" class="form-stack">
+                            <label>Project Title</label>
+                            <input type="text" name="title" placeholder="e.g. StudentHub Portal" required>
+                            <label>Subject</label>
+                            <input type="text" name="subject" placeholder="e.g. IS Development Lab">
+                            <label>File</label>
+                            <input type="file" name="file" required>
+                            <button type="submit" class="btn-primary">Upload Project</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h3>My Uploaded Projects</h3>
+                        {% if projects %}
+                            {% for p in projects %}
+                            <div class="mini-item">
+                                <b>{{ p.title }}</b><small>{{ p.uploaded_on }}</small>
+                                <p>{{ p.subject }} — <a href="{{ url_for('uploaded_file', filename=p.filename) }}" target="_blank">{{ p.filename }}</a></p>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty">No projects uploaded yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== ANNOUNCEMENTS ===== -->
+            <section class="panel" id="panel-announcements">
+                <div class="tabs" data-group="ann">
+                    <button class="tab active" data-tab="general">General</button>
+                    <button class="tab" data-tab="exam">Exam</button>
+                </div>
+                <div class="card tab-body active" data-body="general">
+                    {% for a in ann_general %}
+                    <div class="notice"><div class="notice-ic">📢</div><div><b>{{ a.title }}</b><small>{{ a.date }}</small><p>{{ a.body }}</p></div></div>
+                    {% endfor %}
+                </div>
+                <div class="card tab-body" data-body="exam">
+                    {% for a in ann_exam %}
+                    <div class="notice"><div class="notice-ic">📝</div><div><b>{{ a.title }}</b><small>{{ a.date }}</small><p>{{ a.body }}</p></div></div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- ===== UPDATES ===== -->
+            <section class="panel" id="panel-updates">
+                <div class="tabs" data-group="upd">
+                    <button class="tab active" data-tab="campus">🏫 Campus</button>
+                    <button class="tab" data-tab="events">🎉 Events</button>
+                    <button class="tab" data-tab="culturals">🎭 Culturals</button>
+                    <button class="tab" data-tab="sports">🏅 Sports</button>
+                </div>
+                {% for key, items in updates.items() %}
+                <div class="card tab-body {{ 'active' if key == 'campus' else '' }}" data-body="{{ key }}">
+                    {% for u in items %}
+                    <div class="notice"><div class="notice-ic">📌</div><div><b>{{ u.title }}</b><small>{{ u.date }}</small><p>{{ u.body }}</p></div></div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </section>
+
+            <!-- ===== FEES ===== -->
+            <section class="panel" id="panel-fees">
+                <div class="card">
+                    <h3>Fee Payments</h3>
+                    <table>
+                        <thead><tr><th>Fee</th><th>Category</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody>
+                        {% for f in fees %}
+                            <tr>
+                                <td>{{ f.name }}</td>
+                                <td><span class="pill neutral">{{ f.category }}</span></td>
+                                <td>₹{{ '{:,}'.format(f.amount) }}</td>
+                                <td>{% if f.status == 'Paid' %}<span class="pill ok">Paid</span>{% else %}<span class="pill bad">Pending</span>{% endif %}</td>
+                                <td>
+                                    {% if f.status == 'Paid' %}
+                                        <a class="btn-sm ghost" href="{{ url_for('receipt', fee_id=f.id) }}" target="_blank">🧾 Receipt</a>
+                                    {% else %}
+                                        <a class="btn-sm pay" href="{{ url_for('pay', fee_id=f.id) }}">Pay Now</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- ===================== GUIDE MASCOT + TOUR ===================== -->
+<div class="guide-layer" id="guideLayer">
+    <div class="guide-dim" onclick="endTour()"></div>
+    <div class="guide-box">
+        <div class="guide-mascot">{% include "_mascot.html" %}</div>
+        <div class="guide-bubble">
+            <h4 id="guideTitle">Hi, I'm Hubby! 🤖</h4>
+            <p id="guideText">Welcome to StudentHub! Let me show you around.</p>
+            <div class="guide-actions">
+                <button class="btn-sm ghost" onclick="endTour()">Skip</button>
+                <button class="btn-sm pay" id="guideNext" onclick="nextStep()">Next →</button>
+            </div>
+            <div class="guide-dots" id="guideDots"></div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

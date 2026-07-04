@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt — {{ fee.receipt_no }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="receipt-page">
+    <div class="receipt">
+        <div class="receipt-head">
+            {% include "_logo.html" %}
+            <span class="paid-stamp">PAID</span>
+        </div>
+        <h2>Payment Receipt</h2>
+        <p class="muted">Receipt No: <b>{{ fee.receipt_no }}</b> &nbsp;•&nbsp; Date: {{ fee.paid_on }}</p>
+        <hr>
+        <div class="receipt-rows">
+            <div><span>Student Name</span><b>{{ profile.name }}</b></div>
+            <div><span>Roll Number</span><b>{{ profile.roll }}</b></div>
+            <div><span>Program</span><b>{{ profile.program }}</b></div>
+            <div><span>Fee Type</span><b>{{ fee.name }} ({{ fee.category }})</b></div>
+            <div><span>Payment Mode</span><b>Online</b></div>
+        </div>
+        <div class="receipt-total">
+            <span>Amount Paid</span>
+            <b>₹{{ '{:,}'.format(fee.amount) }}</b>
+        </div>
+        <hr>
+        <p class="receipt-foot">This is a computer-generated receipt and does not require a signature.</p>
+        <div class="receipt-actions no-print">
+            <button class="btn-primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+            <a class="btn-sm ghost" href="{{ url_for('dashboard') }}">← Back to StudentHub</a>
+        </div>
+    </div>
+</body>
+</html>
