@@ -41,7 +41,6 @@ const steps = [
     { panel: "dashboard",     title: "Your Dashboard 🏠",      text: "Here you see your attendance, CGPA, pending fees and upcoming events at a glance." },
     { panel: "attendance",    title: "Attendance 🗓️",          text: "Track your subject-wise attendance. Anything below 75% is flagged in red." },
     { panel: "results",       title: "Results 📊",             text: "Check your exam scores and practical lab marks with grades." },
-    { panel: "bio",           title: "Bio Data 🧑",            text: "All your personal and academic details live here." },
     { panel: "projects",      title: "Projects 📤",            text: "Upload your project files and view everything you've submitted." },
     { panel: "announcements", title: "Announcements 📢",       text: "Never miss general and exam-related notices from your college." },
     { panel: "updates",       title: "Campus Updates 📰",      text: "Stay updated on campus news, events, culturals and sports!" },
@@ -91,5 +90,25 @@ function endTour() {
 window.addEventListener("load", () => {
     if (!localStorage.getItem("hub_tour_done")) {
         setTimeout(startTour, 600);
+    }
+});
+
+// ================= User popup menu (header) =================
+function toggleUserMenu(e) {
+    e.stopPropagation();
+    document.getElementById("userDropdown").classList.toggle("show");
+}
+
+function openProfile() {
+    showPanel("bio");                                   // jump to the Bio Data panel
+    document.getElementById("userDropdown").classList.remove("show");
+}
+
+// Close the popup when clicking anywhere outside it
+document.addEventListener("click", (e) => {
+    const dd = document.getElementById("userDropdown");
+    const btn = document.getElementById("userBtn");
+    if (dd && dd.classList.contains("show") && !dd.contains(e.target) && !btn.contains(e.target)) {
+        dd.classList.remove("show");
     }
 });

@@ -18,7 +18,6 @@
             <a class="nav-item active" data-panel="dashboard"><span>🏠</span> Dashboard</a>
             <a class="nav-item" data-panel="attendance"><span>🗓️</span> Attendance</a>
             <a class="nav-item" data-panel="results"><span>📊</span> Results</a>
-            <a class="nav-item" data-panel="bio"><span>🧑</span> Bio Data</a>
             <a class="nav-item" data-panel="projects"><span>📤</span> Projects</a>
             <a class="nav-item" data-panel="announcements"><span>📢</span> Announcements</a>
             <a class="nav-item" data-panel="updates"><span>📰</span> Updates</a>
@@ -35,12 +34,27 @@
                 <p class="muted">Welcome back, {{ profile.name.split(' ')[0] }} 👋</p>
             </div>
             <div class="topbar-right">
-                <span class="avatar">{{ profile.name[0] }}</span>
-                <div class="who">
-                    <b>{{ profile.name }}</b>
-                    <small>{{ profile.roll }}</small>
+                <button class="user-btn" id="userBtn" onclick="toggleUserMenu(event)">
+                    <span class="avatar">{{ profile.name[0] }}</span>
+                    <div class="who">
+                        <b>{{ profile.name }}</b>
+                        <small>{{ profile.roll }}</small>
+                    </div>
+                    <span class="caret">▾</span>
+                </button>
+
+                <!-- Popup menu -->
+                <div class="user-dropdown" id="userDropdown">
+                    <div class="dropdown-head">
+                        <span class="avatar">{{ profile.name[0] }}</span>
+                        <div>
+                            <b>{{ profile.name }}</b>
+                            <small>{{ profile.email }}</small>
+                        </div>
+                    </div>
+                    <a class="dropdown-item" onclick="openProfile()">🧑 View Profile</a>
+                    <a class="dropdown-item danger" href="{{ url_for('logout') }}">🚪 Logout</a>
                 </div>
-                <a class="logout" href="{{ url_for('logout') }}">Logout</a>
             </div>
         </header>
 
