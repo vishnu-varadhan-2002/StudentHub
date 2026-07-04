@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+studenthub.db
+static/uploads/*
+!static/uploads/.gitkeep
+.vercel
+venv/

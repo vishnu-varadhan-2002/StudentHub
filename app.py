@@ -9,6 +9,7 @@ Login:  student / 1234
 
 import os
 import sqlite3
+import tempfile
 from datetime import datetime
 from flask import (Flask, render_template, request, redirect,
                    url_for, session, flash, send_from_directory)
@@ -16,8 +17,13 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = "studenthub-mini-project"
-DB = "studenthub.db"
-UPLOAD_DIR = os.path.join("static", "uploads")
+
+# On Vercel (serverless) only the temp folder is writable, so the database and
+# uploads must live there. Locally they stay inside the project folder as usual.
+ON_VERCEL = os.environ.get("VERCEL") == "1"
+DATA_DIR = tempfile.gettempdir() if ON_VERCEL else "."
+DB = os.path.join(DATA_DIR, "studenthub.db")
+UPLOAD_DIR = os.path.join(DATA_DIR, "uploads") if ON_VERCEL else os.path.join("static", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # ---- Demo login ----
@@ -300,6 +306,10 @@ def uploaded_file(filename):
     return send_from_directory(UPLOAD_DIR, filename)
 
 
+# Create/seed the database as soon as the app is imported. This is required on
+# Vercel (which imports `app` and never runs the block below) and is harmless
+# locally because the tables are only created if they don't already exist.
+init_db()
+
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
